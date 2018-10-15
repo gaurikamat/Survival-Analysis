@@ -1,0 +1,30 @@
+---
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(survival)
+library(KMsurv)
+```
+
+# Survival object for right censored data
+
+```{r}
+
+# Load Tongue data
+
+data(tongue)
+glimpse(tongue)
+attach(tongue)
+
+# Survival Object
+
+surv.obj = Surv(time,delta)
+surv.obj
+
+```
+

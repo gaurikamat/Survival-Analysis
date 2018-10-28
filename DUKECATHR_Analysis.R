@@ -7,7 +7,7 @@ library(dplyr)
 
 ## Read in Data
 
-dat <- read_csv("dukecathr.csv")
+dat = read_csv("dukecathr.csv")
 attach(dat)
 
 cathdat = data.frame(age = AGE_G, gender = GENDER, race = RACE_G, year = YRCATH_G, 

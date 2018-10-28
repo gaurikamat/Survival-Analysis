@@ -1,0 +1,18 @@
+---
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+References used for analysis/study
+
+
+1. A PRACTICAL GUIDE TO UNDERSTANDING KAPLAN-MEIER CURVES - https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3932959/
+
+2. MODEL SELECTION IN SURVIVAL ANALYSIS (COX PH) -  http://www-personal.umich.edu/~yili/lect6notes.pdf
+
+3. ETH ZURICH SEMINARS IN SURVIVAL ANALYSIS - https://stat.ethz.ch/education/semesters/ss2011/seminar/contents/
+
+4. 

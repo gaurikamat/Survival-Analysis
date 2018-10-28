@@ -43,27 +43,27 @@ cathdat$numdisves= factor(cathdat$numdisves)
 attach(cathdat)
 
 
-## Non-parametric Kaplan Meier Survival Estimate
+## Create Survival Object
 
 surv_obj = Surv(time = time, event = death)
 # surv_obj
 
 
-## KP unstratified
+## Unstratified Kaplan-Meier Estimate
 
 kp.uns = survfit(surv_obj ~ 1, data = cathdat)
 kp.uns.sum = summary(kp.uns)
 ggsurvplot(kp.uns, data = cathdat)
 
 
-## KP Stratified by different covariates
-
+## Stratified Kaplan-Meier Estimates and Mantel-Haenszel log rank test
 
 ### Demographics
 
 #### Gender
 kp.gender = survfit(surv_obj ~ gender, data = cathdat)
 ggsurvplot(kp.gender, data = cathdat,pval = TRUE)
+survdiff(surv_obj ~ gender, data = cathdat)
 
 #### Race
 kp.race = survfit(surv_obj ~ race, data = cathdat,na.action = na.omit)
@@ -104,5 +104,22 @@ ggsurvplot(kp.myo, data = cathdat,pval = TRUE)
 #### Smoking
 kp.smoke = survfit(surv_obj ~ histsmoke, data = cathdat,na.action = na.omit)
 ggsurvplot(kp.smoke, data = cathdat,pval = TRUE)
+
+
+
+### Other
+
+#### S3 Gallop
+kp.s3g = survfit(surv_obj ~ s3g, data = cathdat,na.action = na.omit)
+ggsurvplot(kp.s3g, data = cathdat,pval = TRUE)
+
+
+#### No. of diseased vessels
+kp.disves = survfit(surv_obj ~ numdisves, data = cathdat,na.action = na.omit)
+ggsurvplot(kp.disves, data = cathdat,pval = TRUE)
+
+
+# Note --> Not estimating KM curves for chfsev,maxsten(continuous)  and also year and age group (too many categories)
+
 
 

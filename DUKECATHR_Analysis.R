@@ -20,7 +20,7 @@ detach(dat)
 
 
 
-## Factor Variables
+## Variable Manipulation
 
 cathdat$age = factor(cathdat$age)
 cathdat$gender = factor(cathdat$gender)
@@ -37,8 +37,6 @@ cathdat$histhyplip = factor(cathdat$histhyplip)
 cathdat$histsmoke = factor(cathdat$histsmoke)
 cathdat$s3g = factor(cathdat$s3g)
 cathdat$numdisves= factor(cathdat$numdisves)
-
-
 #cathdat$death= factor(cathdat$death)
 #cathdat$time = as.numeric(cathdat$time)
 
@@ -50,16 +48,15 @@ attach(cathdat)
 surv_obj = Surv(time = time, event = death)
 # surv_obj
 
+
 ## KP unstratified
 
 kp.uns = survfit(surv_obj ~ 1, data = cathdat)
 kp.uns.sum = summary(kp.uns)
-
-
-## Visualize
-
 ggsurvplot(kp.uns, data = cathdat)
 
+
+## KP Stratified
 
 
 

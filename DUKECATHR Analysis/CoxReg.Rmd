@@ -60,8 +60,6 @@ cathdat$numdisves= factor(cathdat$numdisves)
 attach(cathdat)
 ```
 
-
-
 ```{r}
 
 
@@ -85,14 +83,49 @@ imputed = mice(cathdat,m=5,seed=500)
 
 # View Imputations
 
-densityplot(tempData)
+densityplot(imputed)
 
 
 # Pooling and fitting cox regression
 
 surv_obj = Surv(time = time, event = death)
-coxmod = with(imputed,coxph(surv_obj ~ .-death-time))
+coxmod = with(imputed,coxph(surv_obj ~ age + gender + race + year + 
+                     chfsev + histcereb + histchf + 
+                     histcopd + histdiab + histhyp + histmyo + 
+                     histhyplip + histsmoke + height + 
+                     weight + s3g + maxsten + leftvenEF + numdisves))
 summary(pool(coxmod))
+
+
+# Diagnostics for Cox model - each imputed dataset
+
+PH.diag = PHplot.diag = IOplot.diag = vector(mode="list",length=5)
+
+for ( i in 1:5 )
+{
+  
+  # Check for proportional hazards
+  
+  cox.mod = coxph(surv_obj ~ age + gender + race + year + 
+                     chfsev + histcereb + histchf + 
+                     histcopd + histdiab + histhyp + histmyo + 
+                     histhyplip + histsmoke + height + 
+                     weight + s3g + maxsten + leftvenEF + numdisves,data=complete(imputed,i))
+  PH.diag[[i]] = cox.zph(cox.mod)
+  PHplot.diag[[i]] = ggcoxzph(cox.mod)
+  
+  
+  # Check for influential observations
+  
+  IOplot.diag[[i]] = ggcoxdiagnostics(cox.mod, type = "dfbeta",
+                 linear.predictions = FALSE, ggtheme = theme_bw())
+  
+  # Check for 
+  
+  
+  
+}
+
 
 
 

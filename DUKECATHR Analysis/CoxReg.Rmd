@@ -6,3 +6,96 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+# Missing Data Handling
+
+```{r}
+library(VIM)
+library(mice)
+library(survival)
+library(survminer)
+library(ggplot2)
+library(dplyr)
+library(DataExplorer)
+library(gridExtra)
+```
+
+```{r}
+
+# Housekeeping
+
+dat = read.csv("dukecathr.csv")
+dat.unique = dat[dat$RSEQCATHNUM==1,]
+attach(dat.unique)
+
+cathdat = data.frame(age = AGE_G, gender = GENDER, race = RACE_G, year = YRCATH_G, 
+                     chfsev = CHFSEV, histcereb = HXCEREB, histchf = HXCHF, 
+                     histcopd = HXCOPD, histdiab = HXDIAB, histhyp = HXHTN, histmyo = HXMI, 
+                     histhyplip = HXHYL, histsmoke = HXSMOKE, height = HEIGHT_R, 
+                     weight = WEIGHT_R, s3g = S3, maxsten = LMST, leftvenEF = LVEF_R, numdisves = NUMDZV, death = DEATH, time = DAYS2LKA)
+
+detach(dat.unique)
+
+
+
+## Variable factoring
+
+cathdat$age = factor(cathdat$age)
+cathdat$gender = factor(cathdat$gender)
+cathdat$race = factor(cathdat$race)
+cathdat$year = factor(cathdat$year)
+cathdat$chfsev = factor(cathdat$chfsev)
+cathdat$histcereb = factor(cathdat$histcereb)
+cathdat$histchf = factor(cathdat$histchf)
+cathdat$histdiab = factor(cathdat$histdiab)
+cathdat$histcopd = factor(cathdat$histcopd)
+cathdat$histhyp = factor(cathdat$histhyp)
+cathdat$histmyo = factor(cathdat$histmyo)
+cathdat$histhyplip = factor(cathdat$histhyplip)
+cathdat$histsmoke = factor(cathdat$histsmoke)
+cathdat$s3g = factor(cathdat$s3g)
+cathdat$numdisves= factor(cathdat$numdisves)
+#cathdat$death= factor(cathdat$death)
+#cathdat$time = as.numeric(cathdat$time)
+
+attach(cathdat)
+```
+
+
+
+```{r}
+
+
+# Missing Value Visualizing
+
+plot_missing(cathdat)
+
+
+# Visualize missingness pattern 
+
+aggr_plot = aggr(cathdat, numbers=TRUE, sortVars=TRUE, labels=names(data), cex.axis=.7, gap=3, ylab=c("Histogram of missing data","Pattern"),plot=TRUE)
+
+
+# Pairwise Visualizations
+
+
+# Multiple imputation using MICE; m=5 imputations
+
+imputed = mice(cathdat,m=5,seed=500)
+
+
+# View Imputations
+
+densityplot(tempData)
+
+
+# Pooling and fitting cox regression
+
+surv_obj = Surv(time = time, event = death)
+coxmod = with(imputed,coxph(surv_obj ~ .-death-time))
+summary(pool(coxmod))
+
+
+
+
+```
+

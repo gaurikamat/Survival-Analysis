@@ -133,7 +133,50 @@ survdiff(surv_obj ~ numdisves, data = cathdat)
 # Note --> Not estimating KM curves for leftvenEF,chfsev,maxsten(continuous)  
 # To stratify KM curves by year and age group
 
+
 ## MISSING COVARIATES
 
 plot_missing(cathdat)
+
+# Visualize missingness pattern 
+
+aggr_plot = aggr(cathdat, numbers=TRUE, sortVars=TRUE, labels=names(data), cex.axis=.7, gap=3, ylab=c("Histogram of missing data","Pattern"),plot=TRUE)
+
+
+# Pairwise Visualizations
+
+
+# Multiple imputation using MICE; m=5 imputations
+
+imputed = mice(cathdat,m=5,seed=500)
+
+
+# View Imputations
+
+densityplot(imputed)
+
+
+# Pooling and fitting cox regression
+
+surv_obj = Surv(time = time, event = death)
+coxmod = with(imputed,coxph(surv_obj ~ age + gender + race + year + 
+                              chfsev + histcereb + histchf + 
+                              histcopd + histdiab + histhyp + histmyo + 
+                              histhyplip + histsmoke + height + 
+                              weight + s3g + maxsten + leftvenEF + numdisves))
+summary(pool(coxmod))
+
+
+# Diagnostics for Cox model - each imputed dataset
+
+for ( i in 1:5 )
+{
+  cox.mod = coxph(surv_obj ~ age + gender + race + year + 
+                    chfsev + histcereb + histchf + 
+                    histcopd + histdiab + histhyp + histmyo + 
+                    histhyplip + histsmoke + height + 
+                    weight + s3g + maxsten + leftvenEF + numdisves,data=complete(imputed,i))
+  cox.zph(cox.mod)
+  
+}
 

@@ -151,14 +151,34 @@ summary(pool(coxmod))
 
 # Diagnostics for Cox model - each imputed dataset
 
+PH.diag = PHplot.diag = IOplot.diag = nonlinlvef.diag = nonlinchf.diag = nonlinmax.diag = vector(mode="list",length=5)
+
 for ( i in 1:5 )
 {
+  
+  # Check for proportional hazards - Schoenfield Residuals
+  
   cox.mod = coxph(surv_obj ~ age + gender + race + year + 
                     chfsev + histcereb + histchf + 
                     histcopd + histdiab + histhyp + histmyo + 
                     histhyplip + histsmoke + height + 
                     weight + s3g + maxsten + leftvenEF + numdisves,data=complete(imputed,i))
-  cox.zph(cox.mod)
+  PH.diag[[i]] = cox.zph(cox.mod)
+  PHplot.diag[[i]] = ggcoxzph(cox.mod)
+  
+  
+  # Check for influential observations - deltabeta residuals
+  
+  IOplot.diag[[i]] = ggcoxdiagnostics(cox.mod, type = "dfbeta",
+                                      linear.predictions = FALSE, ggtheme = theme_bw())
+  
+  
+  # Check for non-linearity - leftvenEF,chfsev,maxsten(continuous)
+  
+  nonlinlvef.diag[[i]] = ggcoxfunctional(surv_obj ~ leftvenEF + log(leftvenEF) + sqrt(leftvenEF), data = complete(imputed,i))
+  nonlinchf.diag[[i]] =  ggcoxfunctional(surv_obj ~ chfsev + log(chfsev) + sqrt(chfsev), data = complete(imputed,i))
+  nonlinmax.diag[[i]] =  ggcoxfunctional(surv_obj ~ maxsten + log(maxsten) + sqrt(maxsten), data = complete(imputed,i))
   
 }
+
 

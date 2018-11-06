@@ -6,8 +6,6 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Missing Data Handling
-
 ```{r}
 library(VIM)
 library(mice)
@@ -99,12 +97,12 @@ summary(pool(coxmod))
 
 # Diagnostics for Cox model - each imputed dataset
 
-PH.diag = PHplot.diag = IOplot.diag = vector(mode="list",length=5)
+PH.diag = PHplot.diag = IOplot.diag = nonlinlvef.diag = nonlinchf.diag = nonlinmax.diag = vector(mode="list",length=5)
 
 for ( i in 1:5 )
 {
   
-  # Check for proportional hazards
+  # Check for proportional hazards - Schoenfield Residuals
   
   cox.mod = coxph(surv_obj ~ age + gender + race + year + 
                      chfsev + histcereb + histchf + 
@@ -115,14 +113,14 @@ for ( i in 1:5 )
   PHplot.diag[[i]] = ggcoxzph(cox.mod)
   
   
-  # Check for influential observations
+  # Check for influential observations - deltabeta residuals
   
   IOplot.diag[[i]] = ggcoxdiagnostics(cox.mod, type = "dfbeta",
                  linear.predictions = FALSE, ggtheme = theme_bw())
   
-  # Check for 
+  # Check for non-linearity
   
-  
+  nonlinlvef.diag[[i]] =  
   
 }
 

@@ -19,27 +19,9 @@ cathdat = data.frame(age = AGE_G, gender = GENDER, race = RACE_G, year = YRCATH_
 
 detach(dat)
 
-
-
-## Variable Manipulation
-
-cathdat$age = factor(cathdat$age)
-cathdat$gender = factor(cathdat$gender)
-cathdat$race = factor(cathdat$race)
-cathdat$year = factor(cathdat$year)
-cathdat$chfsev = factor(cathdat$chfsev)
-cathdat$histcereb = factor(cathdat$histcereb)
-cathdat$histchf = factor(cathdat$histchf)
-cathdat$histdiab = factor(cathdat$histdiab)
-cathdat$histcopd = factor(cathdat$histcopd)
-cathdat$histhyp = factor(cathdat$histhyp)
-cathdat$histmyo = factor(cathdat$histmyo)
-cathdat$histhyplip = factor(cathdat$histhyplip)
-cathdat$histsmoke = factor(cathdat$histsmoke)
-cathdat$s3g = factor(cathdat$s3g)
-cathdat$numdisves= factor(cathdat$numdisves)
-#cathdat$death= factor(cathdat$death)
-#cathdat$time = as.numeric(cathdat$time)
+cols = names(cathdat)[-c(20,21)]
+cathdat %<>%
+  mutate_each_(funs(factor(.)),cols)
 
 attach(cathdat)
 

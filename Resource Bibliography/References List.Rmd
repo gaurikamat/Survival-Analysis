@@ -17,3 +17,5 @@ References used for analysis/study
 
 4. STHDA Survival Analysis -  http://www.sthda.com/english/wiki/survival-analysis-basics
 
+5. UC Irvine Survival class - https://www.ics.uci.edu/~dgillen/STAT255/Statistics_255.html
+

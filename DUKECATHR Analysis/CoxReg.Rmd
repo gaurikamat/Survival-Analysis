@@ -13,7 +13,7 @@ library(survival)
 library(survminer)
 library(ggplot2)
 library(dplyr)
-library(DataExplorer)
+#library(DataExplorer)
 library(gridExtra)
 ```
 
@@ -34,7 +34,7 @@ cathdat = data.frame(age = AGE_G, gender = GENDER, race = RACE_G, year = YRCATH_
 detach(dat.unique)
 
 
-cols = names(cathdat)[-c(20,21)]
+cols = names(cathdat)[-c(1,5,14,15,17,18,19,20,21)]
 cathdat %<>%
        mutate_each_(funs(factor(.)),cols)
 
@@ -47,7 +47,7 @@ attach(cathdat)
 
 # Missing Value Visualizing
 
-plot_missing(cathdat)
+#plot_missing(cathdat)
 
 
 # Visualize missingness pattern 
@@ -60,7 +60,7 @@ aggr_plot = aggr(cathdat, numbers=TRUE, sortVars=TRUE, labels=names(data), cex.a
 
 # Multiple imputation using MICE; m=5 imputations
 
-imputed = mice(cathdat,m=5,seed=500)
+imputed = mice(cathdat,m=5,maxit = 2,seed=500)
 
 
 # View Imputations
@@ -94,7 +94,7 @@ for ( i in 1:5 )
                      histhyplip + histsmoke + height + 
                      weight + s3g + maxsten + leftvenEF + numdisves,data=complete(imputed,i))
   PH.diag[[i]] = cox.zph(cox.mod)
-  PHplot.diag[[i]] = ggcoxzph(cox.mod)
+  PHplot.diag[[i]] = ggcoxzph(PH.diag[[i]])
   
   
   # Check for influential observations - deltabeta residuals
@@ -103,14 +103,13 @@ for ( i in 1:5 )
                  linear.predictions = FALSE, ggtheme = theme_bw())
   
   
-  # Check for non-linearity - leftvenEF,chfsev,maxsten(continuous)
-  
-  nonlinlvef.diag[[i]] = ggcoxfunctional(surv_obj ~ leftvenEF + log(leftvenEF) + sqrt(leftvenEF), data = complete(imputed,i))
-  nonlinchf.diag[[i]] =  ggcoxfunctional(surv_obj ~ chfsev + log(chfsev) + sqrt(chfsev), data = complete(imputed,i))
-  nonlinmax.diag[[i]] =  ggcoxfunctional(surv_obj ~ maxsten + log(maxsten) + sqrt(maxsten), data = complete(imputed,i))
+#  # Check for non-linearity - leftvenEF,chfsev,maxsten(continuous)
+#  
+#  nonlinlvef.diag[[i]] = ggcoxfunctional(surv_obj ~ leftvenEF + log(leftvenEF) + sqrt(leftvenEF), data = #complete(imputed,i))
+#  nonlinchf.diag[[i]] =  ggcoxfunctional(surv_obj ~ chfsev + log(chfsev) + sqrt(chfsev), data = #complete(imputed,i))
+#  nonlinmax.diag[[i]] =  ggcoxfunctional(surv_obj ~ maxsten + log(maxsten) + sqrt(maxsten), data = #complete(imputed,i))
   
 }
-
 
 
 

@@ -1,0 +1,105 @@
+---
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Accelerated Failure Time Models
+
+Fit AFTs with Weibull, Exponential and Lognormal distributions. 
+
+
+```{r,echo=F,message=F,warning=F}
+
+detach(cathdat)
+
+cathdat.AFT = cathdat
+
+
+attach(cathdat.AFT)
+
+cathdat.AFT$time[cathdat.AFT$time==0]=1e-10
+
+imputed.AFT = mice(cathdat.AFT,m=5,maxit = 2,seed=500)
+
+surv_obj.AFT = Surv(time = cathdat.AFT$time, event = cathdat.AFT$death)
+
+aft.lgnorm = with(imputed.AFT,survreg(surv_obj.AFT ~ age + gender + race + year + 
+                     chfsev + histcereb + histchf + 
+                     histcopd + histdiab + histhyp + histmyo + 
+                     histhyplip + histsmoke + height + 
+                     weight + s3g + maxsten + leftvenEF + numdisves,dist="lognormal"))
+aft.lgnorm.pooled = pool(aft.lgnorm)
+summary(aft.lgnorm.pooled)[,1:7]
+
+aft.weibull = with(imputed.AFT,survreg(surv_obj.AFT ~ age + gender + race + year + 
+                     chfsev + histcereb + histchf + 
+                     histcopd + histdiab + histhyp + histmyo + 
+                     histhyplip + histsmoke + height + 
+                     weight + s3g + maxsten + leftvenEF + numdisves,dist="weibull"))
+
+aft.weibull.pooled = pool(aft.weibull)
+tidy(summary(aft.weibull.pooled)[,1:7])
+
+
+aft.exp = with(imputed.AFT,survreg(surv_obj.AFT ~ age + gender + race + year + 
+                     chfsev + histcereb + histchf + 
+                     histcopd + histdiab + histhyp + histmyo + 
+                     histhyplip + histsmoke + height + 
+                     weight + s3g + maxsten + leftvenEF + numdisves,dist="exponential"))
+
+aft.exp.pooled = pool(aft.exp)
+tidy(summary(aft.exp.pooled)[,1:7])
+
+```
+
+## Selecting between Weibull, Exponential and lognormal
+
+AIC criterion; $AIC = -2logL + 2p$ $\\$
+
+- Calculate AIC for each imputed dataset and select model with lowest AIC $\\$ 
+
+```{r,echo=F,warning=F,message=F}
+
+aftmod.select = vector(mode="list",length=5)
+for( i in 1:5 )
+{
+  wb = survreg(surv_obj.AFT ~ age + gender + race + year + 
+                     chfsev + histcereb + histchf + 
+                     histcopd + histdiab + histhyp + histmyo + 
+                     histhyplip + histsmoke + height + 
+                     weight + s3g + maxsten + leftvenEF + numdisves,dist="weibull",data=complete(imputed.AFT,i))
+  
+  lg = survreg(surv_obj.AFT ~ age + gender + race + year + 
+                     chfsev + histcereb + histchf + 
+                     histcopd + histdiab + histhyp + histmyo + 
+                     histhyplip + histsmoke + height + 
+                     weight + s3g + maxsten + leftvenEF + numdisves,dist="lognormal",data=complete(imputed.AFT,i))
+  
+  ex = survreg(surv_obj.AFT ~ age + gender + race + year + 
+                     chfsev + histcereb + histchf + 
+                     histcopd + histdiab + histhyp + histmyo + 
+                     histhyplip + histsmoke + height + 
+                     weight + s3g + maxsten + leftvenEF + numdisves,dist="exponential",data=complete(imputed.AFT,i))
+  
+  aftmod.select[[i]] = anova(wb,lg,ex)[,3]
+  
+}
+
+
+
+df.aft = data.frame(cbind(seq(1:5),matrix(unlist(aftmod.select), nrow=5, byrow=T),stringsAsFactors=FALSE))
+
+colnames(df.aft) = c("Imputed Dataset","Weibull","Lognormal","Exponential")
+
+kable(df.aft[,-c(5)],caption="-2logL")
+
+
+```
+
+$\\$
+
+Chosen : Weibull model
+

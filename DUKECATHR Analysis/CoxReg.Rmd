@@ -6,22 +6,25 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r}
+```{r,echo=F,warning=F,message=F}
 library(VIM)
 library(mice)
 library(survival)
 library(survminer)
 library(ggplot2)
 library(dplyr)
-#library(DataExplorer)
+library(DataExplorer)
 library(gridExtra)
+library(knitr)
+library(MASS)
+library(broom)
 ```
 
-```{r}
+```{r,echo=F,message=F,warning=F}
 
 # Housekeeping
 
-dat = read.csv("dukecathr.csv")
+dat = read.csv("/Users/gaurikamat/Desktop/dukecathr.csv")
 dat.unique = dat[dat$RSEQCATHNUM==1,]
 attach(dat.unique)
 
@@ -42,21 +45,35 @@ attach(cathdat)
 
 ```
 
-```{r}
 
+## Visualizing Missing Data and Patterns
+
+```{r,echo=F,message=F,warning=F}
 
 # Missing Value Visualizing
 
-#plot_missing(cathdat)
-
+plot_missing(cathdat)
 
 # Visualize missingness pattern 
 
 aggr_plot = aggr(cathdat, numbers=TRUE, sortVars=TRUE, labels=names(data), cex.axis=.7, gap=3, ylab=c("Histogram of missing data","Pattern"),plot=TRUE)
 
 
-# Pairwise Visualizations
+```
 
+$\\\\$
+
+## Multiple Imputation : $\\$
+
+- With MICE $\\$
+
+- 5 imputations $\\$
+
+- Pooling Cox PH estimates for all 5 imputed datasets $\\$
+
+Density of observed versus imputed data : $\\$
+
+```{r,echo=F,message=F,warning=F}
 
 # Multiple imputation using MICE; m=5 imputations
 
@@ -67,6 +84,11 @@ imputed = mice(cathdat,m=5,maxit = 2,seed=500)
 
 densityplot(imputed)
 
+```
+
+## Pooled Cox PH result $\\$
+
+```{r,echo=F,message=F,warning=F}
 
 # Pooling and fitting cox regression
 
@@ -76,43 +98,58 @@ coxmod = with(imputed,coxph(surv_obj ~ age + gender + race + year +
                      histcopd + histdiab + histhyp + histmyo + 
                      histhyplip + histsmoke + height + 
                      weight + s3g + maxsten + leftvenEF + numdisves))
-summary(pool(coxmod))
+coxmod.pooled = pool(coxmod)
+
+tidy(summary(coxmod.pooled)[,1:7])
+
+
+#ph.vrselect = list()
+#for (i in 1:5)
+#{
+#  
+#  survobj.imp = Surv(time = complete(imputed,i)$time, event = complete(imputed,i)$death)
+#  cox.mod = coxph(survobj.imp ~ age + gender + race + year + 
+#                     chfsev + histcereb + histchf + 
+#                     histcopd + histdiab + histhyp + histmyo + 
+#                     histhyplip + histsmoke + height + 
+#                     weight + s3g + maxsten + leftvenEF + numdisves,data=complete(imputed,i))
+#  
+#   ph.vrselect[[i]] = stepAIC(cox.mod, scope = list(upper = .~.,lower = ~1),trace=0)
+#}
 
 
 # Diagnostics for Cox model - each imputed dataset
 
-PH.diag = PHplot.diag = IOplot.diag = nonlinlvef.diag = nonlinchf.diag = nonlinmax.diag = vector(mode="list",length=5)
-
-for ( i in 1:5 )
-{
-  
-  # Check for proportional hazards - Schoenfield Residuals
-  
-  cox.mod = coxph(surv_obj ~ age + gender + race + year + 
-                     chfsev + histcereb + histchf + 
-                     histcopd + histdiab + histhyp + histmyo + 
-                     histhyplip + histsmoke + height + 
-                     weight + s3g + maxsten + leftvenEF + numdisves,data=complete(imputed,i))
-  PH.diag[[i]] = cox.zph(cox.mod)
-  PHplot.diag[[i]] = ggcoxzph(PH.diag[[i]])
-  
-  
-  # Check for influential observations - deltabeta residuals
-  
-  IOplot.diag[[i]] = ggcoxdiagnostics(cox.mod, type = "dfbeta",
-                 linear.predictions = FALSE, ggtheme = theme_bw())
-  
-  
-#  # Check for non-linearity - leftvenEF,chfsev,maxsten(continuous)
+#PH.diag = PHplot.diag = IOplot.diag = nonlinlvef.diag = nonlinchf.diag = nonlinmax.diag = vector(mode="list",length=5)
+#
+#for ( i in 1:5 )
+#{
 #  
-#  nonlinlvef.diag[[i]] = ggcoxfunctional(surv_obj ~ leftvenEF + log(leftvenEF) + sqrt(leftvenEF), data = #complete(imputed,i))
-#  nonlinchf.diag[[i]] =  ggcoxfunctional(surv_obj ~ chfsev + log(chfsev) + sqrt(chfsev), data = #complete(imputed,i))
-#  nonlinmax.diag[[i]] =  ggcoxfunctional(surv_obj ~ maxsten + log(maxsten) + sqrt(maxsten), data = #complete(imputed,i))
-  
-}
+#  # Check for proportional hazards - Schoenfield Residuals
+#  
+#  cox.mod = coxph(surv_obj ~ age + gender + race + year + 
+#                     chfsev + histcereb + histchf + 
+#                     histcopd + histdiab + histhyp + histmyo + 
+#                     histhyplip + histsmoke + height + 
+#                     weight + s3g + maxsten + leftvenEF + numdisves,data=complete(imputed,i))
+#  PH.diag[[i]] = cox.zph(cox.mod)
+#  PHplot.diag[[i]] = ggcoxzph(PH.diag[[i]])}
+#  
+#  
+#  # Check for influential observations - deltabeta residuals
 
-
+#  
+#  #IOplot.diag[[i]] = ggcoxdiagnostics(cox.mod, type = "dfbeta",
+#                linear.predictions = FALSE, ggtheme = theme_bw())
+#  
+#  
+##  # Check for non-linearity - leftvenEF,chfsev,maxsten(continuous)
+##  
+##  nonlinlvef.diag[[i]] = ggcoxfunctional(surv_obj ~ leftvenEF + log(leftvenEF) + sqrt(leftvenEF), data = #complete(imputed,i))
+##  nonlinchf.diag[[i]] =  ggcoxfunctional(surv_obj ~ chfsev + log(chfsev) + sqrt(chfsev), data = #complete(imputed,i))
+##  nonlinmax.diag[[i]] =  ggcoxfunctional(surv_obj ~ maxsten + log(maxsten) + sqrt(maxsten), data = #complete(imputed,i))
+#  
+##}
 
 
 ```
-

@@ -6,23 +6,68 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Accelerated Failure Time Models
+```{r,echo=F,warning=F,message=F}
+library(VIM)
+library(mice)
+library(survival)
+library(survminer)
+library(ggplot2)
+library(dplyr)
+library(DataExplorer)
+library(gridExtra)
+library(knitr)
+library(MASS)
+library(broom)
+```
 
-Fit AFTs with Weibull, Exponential and Lognormal distributions. 
+```{r,echo=F,message=F,warning=F}
+
+# Housekeeping
+
+dat = read.csv("/Users/gaurikamat/Desktop/dukecathr.csv")
+dat.unique = dat[dat$RSEQCATHNUM==1,]
+attach(dat.unique)
+
+cathdat = data.frame(age = AGE_G, gender = GENDER, race = RACE_G, year = YRCATH_G, 
+                     chfsev = CHFSEV, histcereb = HXCEREB, histchf = HXCHF, 
+                     histcopd = HXCOPD, histdiab = HXDIAB, histhyp = HXHTN, histmyo = HXMI, 
+                     histhyplip = HXHYL, histsmoke = HXSMOKE, height = HEIGHT_R, 
+                     weight = WEIGHT_R, s3g = S3, maxsten = LMST, leftvenEF = LVEF_R, numdisves = NUMDZV, death = DEATH, time = DAYS2LKA)
+
+detach(dat.unique)
+
+
+cols = names(cathdat)[-c(1,5,14,15,17,18,19,20,21)]
+cathdat %<>%
+       mutate_each_(funs(factor(.)),cols)
+
+
+```
+
+
+
+## Accelerated Failure Time Models $\\$
+
+
+Fit AFTs with Weibull, Exponential and Lognormal distributions. $\\$
 
 
 ```{r,echo=F,message=F,warning=F}
 
-detach(cathdat)
-
 cathdat.AFT = cathdat
-
 
 attach(cathdat.AFT)
 
 cathdat.AFT$time[cathdat.AFT$time==0]=1e-10
+```
 
+```{r,echo=F,message=F,warning=F,include=F,results='hide'}
 imputed.AFT = mice(cathdat.AFT,m=5,maxit = 2,seed=500)
+```
+
+#### Lognormal $\\$
+
+```{r,echo=F,message=F,warning=F}
 
 surv_obj.AFT = Surv(time = cathdat.AFT$time, event = cathdat.AFT$death)
 
@@ -32,8 +77,14 @@ aft.lgnorm = with(imputed.AFT,survreg(surv_obj.AFT ~ age + gender + race + year 
                      histhyplip + histsmoke + height + 
                      weight + s3g + maxsten + leftvenEF + numdisves,dist="lognormal"))
 aft.lgnorm.pooled = pool(aft.lgnorm)
-summary(aft.lgnorm.pooled)[,1:7]
+summary(aft.lgnorm.pooled)[,c(1,2,5)]
+```
 
+\pagebreak
+
+#### Weibull $\\$
+
+```{r,echo=F,message=F,warning=F}
 aft.weibull = with(imputed.AFT,survreg(surv_obj.AFT ~ age + gender + race + year + 
                      chfsev + histcereb + histchf + 
                      histcopd + histdiab + histhyp + histmyo + 
@@ -41,7 +92,16 @@ aft.weibull = with(imputed.AFT,survreg(surv_obj.AFT ~ age + gender + race + year
                      weight + s3g + maxsten + leftvenEF + numdisves,dist="weibull"))
 
 aft.weibull.pooled = pool(aft.weibull)
-tidy(summary(aft.weibull.pooled)[,1:7])
+summary(aft.weibull.pooled)[,c(1,2,5)]
+
+
+```
+
+\pagebreak
+
+#### Exponential $\\$
+
+```{r,echo=F,message=F,warning=F}
 
 
 aft.exp = with(imputed.AFT,survreg(surv_obj.AFT ~ age + gender + race + year + 
@@ -51,11 +111,13 @@ aft.exp = with(imputed.AFT,survreg(surv_obj.AFT ~ age + gender + race + year +
                      weight + s3g + maxsten + leftvenEF + numdisves,dist="exponential"))
 
 aft.exp.pooled = pool(aft.exp)
-tidy(summary(aft.exp.pooled)[,1:7])
+summary(aft.exp.pooled)[,c(1,2,5)]
 
 ```
 
-## Selecting between Weibull, Exponential and lognormal
+\pagebreak 
+
+## Selecting between Weibull, Exponential and lognormal $\\$
 
 AIC criterion; $AIC = -2logL + 2p$ $\\$
 
@@ -66,6 +128,7 @@ AIC criterion; $AIC = -2logL + 2p$ $\\$
 aftmod.select = vector(mode="list",length=5)
 for( i in 1:5 )
 {
+  
   wb = survreg(surv_obj.AFT ~ age + gender + race + year + 
                      chfsev + histcereb + histchf + 
                      histcopd + histdiab + histhyp + histmyo + 
@@ -101,5 +164,5 @@ kable(df.aft[,-c(5)],caption="-2logL")
 
 $\\$
 
-Chosen : Weibull model
+Based on AIC, choose Weibull model
 

@@ -163,11 +163,4 @@ ggdisves
 
 ```
 
-## Missing Data 
-
-```{r,echo=F}
-plot_missing(cathdat)
-```
-
-
 

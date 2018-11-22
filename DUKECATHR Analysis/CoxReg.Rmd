@@ -48,17 +48,24 @@ attach(cathdat)
 
 ## Visualizing Missing Data and Patterns
 
+$\\$
+
+
 ```{r,echo=F,message=F,warning=F}
 
 # Missing Value Visualizing
 
 plot_missing(cathdat)
 
+```
+
+
+$\\\\$
+
+```{r,echo=F,message=F,warning=F}
 # Visualize missingness pattern 
 
 aggr_plot = aggr(cathdat, numbers=TRUE, sortVars=TRUE, labels=names(data), cex.axis=.7, gap=3, ylab=c("Histogram of missing data","Pattern"),plot=TRUE)
-
-
 ```
 
 $\\\\$
@@ -73,18 +80,24 @@ $\\\\$
 
 Density of observed versus imputed data : $\\$
 
-```{r,echo=F,message=F,warning=F}
+```{r,echo=F,message=F,warning=F,include=F,results='hide'}
 
 # Multiple imputation using MICE; m=5 imputations
 
 imputed = mice(cathdat,m=5,maxit = 2,seed=500)
 
+```
+
+```{r,echo=F,message=F,warning=F}
 
 # View Imputations
 
 densityplot(imputed)
 
 ```
+
+\pagebreak
+
 
 ## Pooled Cox PH result $\\$
 
@@ -100,7 +113,7 @@ coxmod = with(imputed,coxph(surv_obj ~ age + gender + race + year +
                      weight + s3g + maxsten + leftvenEF + numdisves))
 coxmod.pooled = pool(coxmod)
 
-tidy(summary(coxmod.pooled)[,1:7])
+summary(coxmod.pooled)[,c(1,2,5)]
 
 
 #ph.vrselect = list()

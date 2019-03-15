@@ -79,12 +79,4 @@ The outcome of survival time is defined by two variables: whether death occurred
 
 
 
-<!---
--Jiurui post data on Sakai with data dictionary linked here; variables to include in dataset include the following:  AGE_G, GENDER, RACE_G, YRCATH_G, CHFSEV, HXCEREB, HXCHF, HXCOPD, HXDIAB, HXHTN, HXMI, HXHYL, HXSMOKE, HEIGHT_R, WEIGHT_R, (calculate BMI from height and weight),  S3, LMST, LVEF_R, NUMDZV, DEATH, DAYS2LKA
--Jiurui let me know % with missing data for each variable. Also subset to one observation per person (repeat events are included, but there should be only one death)
--NOtes: look at race by gender interaction,
-- outcome should be time to death. Have Jiurui construct this bearing in mind the censoring variable
-
-
---->
 

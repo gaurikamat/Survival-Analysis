@@ -1,2 +1,2 @@
 # Survival-Analysis
-DUKECATHR data analysis
+Time to event modeling for DUKECATHR data 

@@ -1,2 +1,2 @@
 # Survival-Analysis
-Independent Study F18
+DUKECATHR data analysis
